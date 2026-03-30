@@ -1,0 +1,754 @@
+:root {
+    --cookie-color: #795548;
+    --text-color: #fff;
+    --accent-color: #4CAF50;
+    --panel-bg: #fff;
+    --border-radius: 12px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Fredoka One', sans-serif;
+}
+
+body, html {
+    height: 100%;
+    overflow: hidden; /* Prevents scrolling on mobile */
+    background-image: url('/bgBlue.jpg'); /* keep the original image as the background */
+    background-size: 240px 240px; /* larger tile size so the texture reads bigger */
+    background-position: center;
+    background-repeat: repeat;
+    /* Use a dark base color so no white shows while texture loads */
+    background-color: #0f1720;
+    color: var(--text-color);
+}
+
+
+
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 10px;
+}
+
+#main-content {
+    display: flex;
+    flex-grow: 1; /* Takes up all vertical space left by stats */
+    gap: 10px;
+    padding-top: 10px;
+    min-height: 0; /* Important for flex children with overflow */
+}
+
+/* When .reversed is applied to #app, swap the visual order of the clicker and upgrade panel.
+   This moves the cookie to the right and the shop to the left (or vice versa). */
+#app.reversed #clicker-area {
+    order: 2;
+}
+#app.reversed #upgrade-panel {
+    order: 1;
+}
+
+/* Add a small transition so swapping feels smooth */
+#clicker-area, #upgrade-panel {
+    transition: order 160ms ease, transform 180ms ease;
+}
+
+#cookie-count {
+    font-size: 2.5em;
+    color: #fff; /* Changed color to white */
+    margin-bottom: 5px;
+    text-align: center;
+    flex-shrink: 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Added text shadow for readability */
+}
+
+#cps-display {
+    font-size: 1.2em;
+    color: #fff; /* Changed color to white */
+    opacity: 1; /* Increased opacity for white text visibility */
+    text-align: center;
+    margin-bottom: 0px;
+    flex-shrink: 0;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* Added text shadow for readability */
+}
+
+/* New element for the title strip */
+#title-strip {
+    background-color: rgba(0, 0, 0, 0.6); /* Black, slightly opaque */
+    width: 50%;
+    padding: 6px 0;
+    margin-bottom: 5px; 
+    flex-shrink: 0;
+    border-radius: 20px; /* Implementing 0.8 interpreted as 8px round corner */
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+}
+
+/* News strip removed */
+
+/* Top menu container that holds the news strip above the title */
+#top-menu {
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+/* small news/menu strip placed above the main bakery title */
+#news-strip {
+    background: rgba(0,0,0,0.75); /* slightly darker for contrast */
+    color: #fff;
+    /* Fixed height but allow text to resize and wrap to fit */
+    height: 10vh;
+    padding: 6px 12px; /* compact padding to fit the smaller height */
+    border-radius: 20px;
+    /* responsive font-size that clamps between a min and max */
+    font-size: clamp(0.9rem, 2.5vh + 0.6vw, 2.25rem);
+    min-width: 100%;
+    max-width: 100%;
+    box-shadow: 0 10px 34px rgba(0,0,0,0.75);
+    cursor: pointer;
+    user-select: none;
+    outline: none;
+    border: 6px solid rgba(255,255,255,0.10); /* thicker border */
+    text-align: center;
+    font-weight: 900;
+    /* allow wrapping and break long words, center multi-line text */
+    line-height: 1.05;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: normal;
+    word-break: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-left: 14px;
+    padding-right: 14px;
+}
+#news-strip:focus {
+    box-shadow: 0 0 0 4px rgba(255,255,255,0.04);
+}
+
+#title-text {
+    font-size: 1.5em;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+/* New element for the counter background strip */
+#counter-strip {
+    background-color: rgba(0, 0, 0, 0.5); /* Black, 50% transparent */
+    width: 103.5%; /* Span the width of #clicker-area */
+    padding: 5px 0;
+    margin-bottom: 10px; 
+    flex-shrink: 0;
+}
+
+/* Clicker Area (Left side) */
+#clicker-area {
+    flex-basis: 50%; /* Adjusted for 50/50 split */
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column; /* Stack vertically */
+    justify-content: center; /* Start content from the top */
+    align-items: center; /* Center horizontally */
+    position: relative; /* Needed for click feedback placement */
+    min-width: 0;
+}
+
+#cookie-button {
+    width: 210px; /* 50% smaller width */
+    height: 210px; /* 50% smaller height */
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.05s ease-out;
+    touch-action: manipulation; /* Improves mobile responsiveness */
+    margin-top: 8px;
+    margin-bottom: 8px;
+    flex: 0 0 auto; /* don't flex-grow or shrink */
+}
+
+#cookie-button img {
+    width: 100%;
+    height: 100%;
+    /* Stronger shadow to give a thicker, weighty feel */
+    filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.55));
+    transform-origin: center;
+}
+
+/* Spinning white rays behind the cookie */
+.cookie-rays {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 140%;
+    height: 140%;
+    pointer-events: none;
+    z-index: 0; /* behind the cookie image */
+    border-radius: 50%;
+    /* use the provided sunburst graphic as the rays texture (use quoted filename so spaces work) */
+    background-image: url("/pngimg.com - light_PNG14454.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    /* mask so rays are visible as a ring around the cookie center */
+    -webkit-mask-image: radial-gradient(circle, rgba(0,0,0,0.0) 48%, rgba(0,0,0,1) 60%);
+    mask-image: radial-gradient(circle, rgba(0,0,0,0.0) 48%, rgba(0,0,0,1) 60%);
+    opacity: 0.85;
+    mix-blend-mode: screen; /* keeps rays bright without overpowering cookie */
+    filter: drop-shadow(0 8px 18px rgba(0,0,0,0.35)) saturate(1.1);
+    animation: spin-rays 8s linear infinite;
+}
+
+/* slightly faster spin on active click for snappy feel */
+#cookie-button:active .cookie-rays {
+    animation-duration: 3s;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.995);
+}
+
+@keyframes spin-rays {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* ensure cookie image sits above rays */
+#cookie-button img {
+    position: relative;
+    z-index: 2;
+}
+
+/* inner bounce animation applied to the cookie image when clicked */
+#cookie-button img.inner-bounce {
+    animation: inner-bounce 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    will-change: transform;
+}
+
+@keyframes inner-bounce {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(0.90); }
+    70%  { transform: scale(1.03); }
+    100% { transform: scale(1); }
+}
+
+#cookie-button:active {
+    transform: scale(0.95);
+}
+
+/* Upgrade Panel (Right side) */
+#upgrade-panel {
+    flex-basis: 50%; /* Reverted to 50% width */
+    flex-grow: 1;
+    min-width: 0; /* Allow content to shrink if needed */
+    padding: 10px;
+    overflow-y: auto;
+    border-top: none;
+    border-left: 1px solid rgba(255, 255, 255, 0.5); /* Semi-transparent white border */
+    background-color: rgba(0, 0, 0, 0.45); /* 55% transparent black */
+}
+
+#upgrade-panel h2 {
+    text-align: center;
+    margin-bottom: 10px;
+    color: white;
+}
+
+/* Auto-buy controls styling */
+#auto-buy-select {
+    min-width: 160px;
+    border: none;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-weight: 700;
+}
+#auto-buy-toggle {
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-weight: 800;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.upgrade-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px; /* larger padding for thicker feel */
+    margin: 8px 10px;
+    background-color: rgba(255,255,255,0.08);
+    border-radius: calc(var(--border-radius) + 6px);
+    transition: background-color 0.1s;
+    border: 3px solid rgba(255,255,255,0.12); /* thicker border */
+    box-shadow: 0 8px 18px rgba(0,0,0,0.45);
+}
+
+.upgrade-info {
+    flex-grow: 1;
+}
+
+.upgrade-name {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.upgrade-cost {
+    font-size: 0.9em;
+    color: var(--cookie-color);
+}
+
+.upgrade-stats {
+    font-size: 0.8em;
+    color: var(--accent-color);
+}
+
+.upgrade-count {
+    font-size: 0.9em;
+    font-weight: normal;
+    color: #666;
+}
+
+.upgrade-button {
+    padding: 14px 20px; /* larger hit area and thicker look */
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1.05em;
+    min-width: 110px;
+    transition: background-color 0.15s;
+    font-weight: 800; /* bolder text */
+    box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+}
+
+.upgrade-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.upgrade-item.disabled {
+    opacity: 0.7;
+}
+
+/* Click Feedback */
+.click-feedback {
+    position: absolute;
+    font-size: 2em;
+    font-weight: bold;
+    color: #ffffff; /* White for positive feedback */
+    pointer-events: none;
+    animation: fadeup 1s ease-out forwards;
+    z-index: 10;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    /* Ensure placement relative to the viewport/body */
+    position: fixed; 
+}
+
+@keyframes fadeup {
+    0% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+}
+
+/* Modal Styling */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: none; /* Hidden by default */
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.modal.visible {
+    display: flex;
+}
+
+.modal-content {
+    background-color: black;
+    color: white; /* Ensure general text visibility on black background */
+    padding: 20px;
+    border-radius: var(--border-radius);
+    width: 80%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+    border: 5px solid #dac56e; /* Added 5px stroke */
+}
+
+/* Prompt textarea styling */
+#prompt-textarea {
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-family: inherit;
+    font-size: 1rem;
+    color: black;
+}
+
+.modal-content h3 {
+    color: white; /* Changed heading color for visibility on black background */
+}
+
+#new-bakery-name {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1.5em; /* Increased size to match the main bakery title #title-text */
+}
+
+#random-name-btn, #save-name-btn, #cancel-name-btn {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s;
+}
+
+/* new: place modal buttons in one row and ensure touch-friendly spacing */
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+/* slightly increase hit area on smaller screens */
+.modal-actions button {
+    min-width: 88px;
+    padding: 10px 12px;
+}
+
+#random-name-btn {
+    background-color: #dac56e; /* Gold color matching the modal stroke */
+    color: black;
+    font-weight: bold;
+}
+
+#save-name-btn {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+#cancel-name-btn {
+    background-color: #f44336;
+    color: white;
+}
+
+/* Warning banner for file load errors */
+.file-warning {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 18px;
+    background: none;
+    color: #ff3b30; /* vivid red text */
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: bold;
+    z-index: 1000;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 100ms linear;
+    box-shadow: none;
+    min-width: 200px;
+    text-align: center;
+}
+
+/* Print box: white text list element pinned to bottom-left that requires click to close */
+.print-box {
+    position: fixed;
+    left: 18px;
+    bottom: 18px;
+    z-index: 1000;
+    list-style: disc inside;
+    background: rgba(255,255,255,0.08); /* slightly stronger background */
+    color: #ffffff; /* white text as requested */
+    padding: 14px 18px;
+    border-radius: 14px;
+    min-width: 220px;
+    max-width: 70vw;
+    cursor: pointer; /* clicking closes */
+    display: block;
+    border: 4px solid rgba(255,255,255,0.16); /* thicker border */
+    box-shadow: 0 10px 26px rgba(0,0,0,0.55);
+}
+
+/* single item inside the print list */
+.print-item {
+    font-weight: bold;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    padding-right: 8px;
+}
+
+/* close button inside the print item */
+.print-close {
+    margin-left: auto;
+    background: rgba(255,255,255,0.12);
+    color: white;
+    border: none;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: inherit;
+}
+
+/* ensure print box is touch friendly */
+.print-box, .print-close {
+    min-height: 44px;
+    min-width: 44px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Upgrade icons inserted into upgrade list */
+.upgrade-info {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Language modal tweaks so it looks cohesive */
+.lang-button {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background: rgba(255,255,255,0.08);
+    color: white;
+    min-width: 96px;
+    font-weight: bold;
+}
+.lang-button:hover {
+    background: rgba(255,255,255,0.12);
+}
+.lang-button:active {
+    transform: translateY(1px);
+}
+
+/* Version label (bottom-left) */
+#version-text {
+    position: fixed;
+    left: 12px;
+    bottom: 12px;
+    z-index: 1100;
+    color: rgba(255,255,255,0.8);
+    background: rgba(0,0,0,0.35);
+    padding: 6px 10px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border: 2px solid rgba(255,255,255,0.06);
+    pointer-events: none;
+    backdrop-filter: blur(4px);
+}
+
+.upgrade-icon {
+    width: 56px;
+    height: 56px;
+    flex: 0 0 56px;
+    border-radius: 8px;
+    object-fit: contain;
+    background: rgba(255,255,255,0.03);
+    padding: 6px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.02);
+}
+
+/* Achievements panel list items */
+.achievement-item {
+    display:flex;
+    gap:12px;
+    align-items:center;
+    padding:10px;
+    background: rgba(255,255,255,0.03);
+    border-radius:10px;
+    border:2px solid rgba(255,255,255,0.04);
+}
+
+.achievement-item img {
+    width:56px;
+    height:56px;
+    border-radius:8px;
+    object-fit:contain;
+}
+
+/* Toast for earned achievements */
+.achievement-toast {
+    pointer-events:auto;
+    display:flex;
+    gap:10px;
+    align-items:center;
+    background: linear-gradient(180deg,#00796b,#009688);
+    color: white;
+    padding:10px 12px;
+    border-radius:12px;
+    min-width:260px;
+    max-width:420px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+    transform-origin: bottom right;
+    animation: toast-pop 220ms cubic-bezier(.2,.8,.2,1);
+}
+
+.achievement-toast img {
+    width:56px;
+    height:56px;
+    border-radius:8px;
+    object-fit:contain;
+    background: rgba(255,255,255,0.06);
+    padding:6px;
+}
+
+.achievement-toast .toast-body {
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+}
+
+.achievement-toast .toast-title {
+    font-weight:900;
+    font-size:1rem;
+}
+
+.achievement-toast .toast-desc {
+    font-size:0.85rem;
+    opacity:0.95;
+}
+
+/* close button */
+.achievement-toast .toast-close {
+    background: rgba(255,255,255,0.12);
+    border: none;
+    color: white;
+    padding:6px 8px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:700;
+}
+
+/* entrance animation */
+@keyframes toast-pop {
+    0% { transform: scale(0.88) translateY(6px); opacity:0; }
+    100% { transform: scale(1) translateY(0); opacity:1; }
+}
+
+/* Temple upgrade: use Special Elite for only the temple's visible name */
+#upgrade-item-temple .upgrade-name {
+    font-family: "Special Elite", "Fredoka One", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 1.1em;
+}
+
+/* Grandma upgrade: use Comic Sans MS for only the grandma's visible name */
+#upgrade-item-grandma .upgrade-name {
+    font-family: "Comic Sans MS", "Comic Sans", "Fredoka One", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 1.1em;
+}
+
+/* Wizard upgrade: use Arial light italic for only the wizard's visible name */
+#upgrade-item-wizard .upgrade-name {
+    font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+    font-style: italic;
+    font-weight: 300; /* light */
+    /* keep size consistent with other upgrade names */
+    font-size: 1.1em;
+}
+
+/* Fandom Ship upgrade: use Sekuya font for only the fandom_ship's visible name */
+#upgrade-item-fandom_ship .upgrade-name {
+    font-family: "Sekuya", "Fredoka One", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 1.1em;
+}
+
+/* Infinite Craft upgrade: use Oswald for only the infinite_craft's visible name */
+#upgrade-item-infinite_craft .upgrade-name {
+    font-family: "Oswald", "Fredoka One", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 1.1em;
+}
+
+/* Bank upgrade: use Orbitron */
+#upgrade-item-bank .upgrade-name {
+    font-family: "Orbitron", "Fredoka One", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 500;
+    font-style: normal;
+    font-size: 1.1em;
+}
+
+/* Factory upgrade: use Google Sans Code (with fallbacks) */
+#upgrade-item-factory .upgrade-name {
+    font-family: "Google Sans Code", "Google Sans", "Fredoka One", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 1.1em;
+}
+
+/* Farm upgrade: use Joti One */
+#upgrade-item-farm .upgrade-name {
+    font-family: "Joti One", "Fredoka One", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 1.1em;
+}
+
+/* Mine upgrade: use Fontdiner Swanky */
+#upgrade-item-mine .upgrade-name {
+    font-family: "Fontdiner Swanky", "Fredoka One", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 1.1em;
+}
+
+/* Portal upgrade: use VT323 */
+#upgrade-item-portal .upgrade-name {
+    font-family: "VT323", "Fredoka One", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 1.1em;
+}
+
+/* Gambling upgrade: use Ole (Google Font "Ole") */
+#upgrade-item-gambling .upgrade-name {
+    font-family: "Ole", "Fredoka One", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 700;
+    font-style: normal;
+    font-size: 1.1em;
+}
+

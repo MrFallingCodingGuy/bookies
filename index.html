@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookie Clicker</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sekuya:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Joti+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    <!-- Added fonts for specific upgrades -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fontdiner+Swanky&display=swap" rel="stylesheet">
+    <!-- Google Sans Code is not an official Google Fonts family; attempt to load if present and fall back -->
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Code&display=swap" rel="stylesheet">
+    <!-- VT323 for Portal upgrade -->
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="app">
+        <div id="main-content">
+            <div id="clicker-area">
+                <div id="title-strip">
+                    <p id="title-text">Cookie Bakery</p>
+                </div>
+                <div id="counter-strip">
+                    <h1 id="cookie-count">0 Cookies</h1>
+                    <p id="cps-display">per second 0.0 </p>
+                </div>
+                <button id="cookie-button">
+                    <img src="cookie.png" alt="Giant Cookie">
+                </button>
+            </div>
+
+            <div id="upgrade-panel">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                    <h2 id="upgrades-title">Upgrades</h2>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <select id="auto-buy-select" aria-label="Select upgrade to auto-buy" style="padding:8px;border-radius:8px;background:#fff;color:#000;">
+                            <option value="">Auto-buy: Off</option>
+                        </select>
+                        <button id="achievements-btn" class="upgrade-button" style="min-width:88px;padding:8px 12px;background:#009688;">Achievements</button>
+                    </div>
+                </div>
+                <div id="upgrade-list">
+                    <!-- Upgrades will be inserted here -->
+                </div>
+
+                <!-- Achievements menu (hidden by default) -->
+                <div id="achievements-panel" class="modal" aria-hidden="true">
+                    <div class="modal-content" style="max-width:520px;">
+                        <h3>Achievements</h3>
+                        <div id="achievements-list" style="display:flex;flex-direction:column;gap:10px;max-height:320px;overflow:auto;padding:6px 0;"></div>
+                        <div style="display:flex;justify-content:center;margin-top:8px;">
+                            <button id="close-achievements" class="upgrade-button" style="background:#f44336;">Close</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Added save/load controls -->
+                <div id="file-controls" style="display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;margin-top:10px;">
+                    <div style="display:flex;gap:8px;justify-content:center;width:100%;">
+                        <button id="save-file-btn" class="upgrade-button" style="background:#009688;">Save to File</button>
+                        <button id="load-file-btn" class="upgrade-button">Load from File</button>
+                        <button id="consle-btn" class="upgrade-button" title="Open console">Console</button>
+                    </div>
+                    <div style="display:flex;gap:8px;justify-content:center;width:100%;">
+                        <button id="swap-layout-btn" class="upgrade-button" title="Swap shop and cookie positions" style="min-width:160px;padding:8px 12px;background:#607d8b;">Swap Layout</button>
+                        <button id="reset-btn" class="upgrade-button" title="Reset game and clear saves">Reset</button>
+                        <button id="support-btn" class="upgrade-button" title="Support Me!" style="background:#ff5722;min-width:130px;padding:8px 12px;">Support Me!</button>
+                    </div>
+                    <input type="file" id="load-file-input" accept=".json" style="display:none;" />
+                </div>
+            </div>
+        </div>
+        
+        <!-- Achievements toast container (bottom-right) -->
+        <div id="achievement-toast-container" aria-live="polite" style="position:fixed;right:18px;bottom:18px;z-index:1200;pointer-events:none;"></div>
+
+        <!-- Version label (bottom-left) -->
+        <div id="version-text" aria-hidden="true">v2.23</div>
+
+        <div id="name-modal" class="modal">
+            <div class="modal-content">
+                <h3>Rename Your Bakery</h3>
+                <input type="text" id="new-bakery-name" placeholder="Enter new name...">
+                <div class="modal-actions">
+                    <button id="save-name-btn">Confirm</button>
+                    <button id="random-name-btn">Random</button>
+                    <button id="cancel-name-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Language selection removed -->
+
+        <!-- Console modal (separate from rename modal) -->
+        <div id="console-modal" class="modal" aria-hidden="true">
+            <div class="modal-content">
+                <h3>Console</h3>
+                <input type="text" id="console-input" placeholder="Type a command.">
+                <div class="modal-actions">
+                    <button id="console-run-btn" class="upgrade-button">Run</button>
+                    <button id="console-cancel-btn" class="upgrade-button" style="background-color:#f44336;">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prompt modal: opened by "prompt:<title>" command -->
+        <div id="prompt-modal" class="modal" aria-hidden="true">
+            <div class="modal-content">
+                <h3 id="prompt-title">Prompt</h3>
+                <textarea id="prompt-textarea" placeholder="Enter text..."></textarea>
+                <div class="modal-actions">
+                    <button id="prompt-ok-btn" class="upgrade-button">OK</button>
+                    <button id="prompt-cancel-btn" class="upgrade-button" style="background-color:#f44336;">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reset confirmation modal -->
+        <div id="reset-modal" class="modal" aria-hidden="true">
+            <div class="modal-content">
+                <h3>Reset Game</h3>
+                <p>Are you sure you want to reset? This will clear local saves and reset progress.</p>
+                <div style="display:flex;gap:10px;justify-content:center;">
+                    <button id="confirm-reset-btn" style="background-color:#f44336;color:white;padding:10px 15px;border:none;border-radius:8px;min-width:100px;">Yes, Reset</button>
+                    <button id="cancel-reset-btn" style="background-color:#ccc;color:black;padding:10px 15px;border:none;border-radius:8px;min-width:100px;">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gambling Spinner Modal -->
+        <div id="gamble-modal" class="modal" aria-hidden="true">
+            <div class="modal-content" style="max-width:520px;align-items:center;">
+                <h3>Gamble: Spin the Wheel</h3>
+                <p style="font-size:0.95rem;margin:6px 0 12px 0;color:#cbe9e1;">Spend all your cookies to spin — you must have at least 1,000,000 cookies to gamble.</p>
+                <canvas id="gamble-wheel" width="420" height="420" style="border-radius:8px;background:#000;"></canvas>
+                <div style="display:flex;gap:8px;margin-top:10px;">
+                    <button id="spin-btn" class="upgrade-button" style="flex:1;">SPIN</button>
+                    <button id="cancel-gamble-btn" class="upgrade-button" style="background:#f44336;flex:1;">Cancel</button>
+                </div>
+                <div id="gamble-result" style="margin-top:12px;font-weight:800;color:#ffdca3;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Background music (hidden, will be started via user interaction / autoplay attempt) -->
+    <audio id="bg-audio" src="Hotel_music (3).ogg" loop preload="auto" aria-hidden="true"></audio>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>
+
